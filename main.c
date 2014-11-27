@@ -80,7 +80,7 @@ void USART1_Configuration(void)
      *  - Hardware flow control disabled (RTS and CTS signals)
      *  - Receive and transmit enabled
      */
-    USART_InitStructure.USART_BaudRate = 115200;
+    USART_InitStructure.USART_BaudRate = 9600;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -107,21 +107,33 @@ int main(void)
     USART1_Configuration();
 
     USART1_puts("Hello World!\r\n");
-    USART1_puts("Just for STM32F429I Discovery verify USART1 with USB TTL Cable\r\n");
+    char t = 'a';
+    char rs[50] = {'\0'};
+    char* prs = rs;
+
+    while(t != 'b')
+	{
+		while(USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET);
+		t = USART_ReceiveData(USART1);
+		*prs++ = t;
+	}
+	USART1_puts("\r\nThis is the string typed by user:\r\n");
+	USART1_puts(rs);
+
     while(1)
     {
         while(USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET);
-        char t = USART_ReceiveData(USART1);
+        t = USART_ReceiveData(USART1);
         if ((t == '\r')) {
             while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
             USART_SendData(USART1, t);
             t = '\n';
-        }
+     	}
         while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
         USART_SendData(USART1, t);
     }
 
-    while(1); // Don't want to exit
+    while(1);	// Don't want to exit
 }
 #ifdef  USE_FULL_ASSERT
 
